@@ -1,0 +1,103 @@
+<app-page-header [title]="'Stock'" [title1]="['Stock']" [activeitem]="'Stock List'" *ngIf="pageHeader"></app-page-header>
+
+
+<div class="box py-3 px-4">
+    <nav class="sm:flex sm:space-x-2 sm:rtl:space-x-reverse gap-1" aria-label="Tabs" role="tablist">
+        <ng-container *ngIf="skLoading">
+            <app-skeleton  *ngFor="let row of [].constructor(2)" [class]="'w100 h25'"></app-skeleton>
+        </ng-container>
+        <ng-container *ngIf="!skLoading">
+            <app-listing-tab 
+            *ngFor="let tab of mainTabs"
+            [tabs]="[{ name: tab.name, label: tab.label, icon: tab.icon, count: tab.count}]"
+            [activeTab]="activeTab"
+            (tabChange)="onTabChange($event.tab)"></app-listing-tab>
+        </ng-container>
+    </nav>
+    
+    <!-- Start::row-1 -->
+    <div class="row">
+        <div class="col-xl-12">
+            <ng-container *ngIf="activeTab === 'Stock' || activeTab === 'Out of stock'">
+                <app-page-sub-header [pageTitle]="'Stock List'" [listLength]="stockList.length" 
+                [btnShow]="true" [refreshLabel]="'Refresh'" (onRefresh)="onRefresh()" [class]="'p-0 pt-2'" 
+                [btnShow2]="showChangeStatusBtn && this.orgData.login_type_id === 5" [addBtnLabel]="'Add Warranty'" (button1)="goToWarrantyAddPage()"></app-page-sub-header>
+                
+                <div class="table-responsive overflow-auto table-bordered-default">
+                    <spk-reusable-tables tableClass="ti-custom-table ti-custom-table-head ti-custom-table-hover ti-head-primary whitespace-nowrap" [columns]="getColumns()" [showCheckbox]="false">
+                        <tr class="todo-box border-b !border-defaultborder dark:!border-defaultborder/10">
+                            <td>&nbsp;</td>
+                            <td class="w50">&nbsp;</td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.product_name" placeholder="Search..." (keyup.enter)="getStock()">
+                                        @if (filter.product_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.product_name=''; getStock()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td class="w150">
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.product_code" placeholder="Search..." (keyup.enter)="getStock()">
+                                        @if (filter.product_code) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.product_code=''; getStock()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                            <td class="w120">&nbsp;</td>
+                        </tr>
+                        <ng-container *ngIf="!skLoading">
+                            <tr *ngFor="let row of stockList; let i = index;">
+                                <td class="w50 task-checkbox">
+                                    <ng-container *ngIf="this.orgData.login_type_id === 5">
+                                        <input class="form-check-input" type="checkbox" [(ngModel)]="row.checked" (change)="toggleRowChecked(row)" *ngIf="row.stock_quantity > 0">
+                                    </ng-container>
+                                </td>
+                                <td class="w50 text-center">{{(pagination.cur_page - 1) * pagination.limit + i + 1 }}</td>
+                                <td>{{row.product_name ? (row.product_name | titlecase) : '---'}}</td>
+                                <td class="w150">{{row.product_code ? row.product_code : '---'}}</td>
+                                <td class="w120 text-center">{{row.stock_quantity ? row.stock_quantity : '0'}}</td>
+                                <td class="w120 text-center">{{row.square_meter ? row.square_meter : '0'}}</td>
+                                <td class="w120">{{row.batch_no ? row.batch_no : '--'}}</td>
+                                <td class="w120">{{row.product_grade ? row.product_grade : '--'}}</td>
+                                <td class="w120">{{row.color_code ? row.color_code : '--'}}</td>
+                                <td class="w120">{{row.length ? row.length : '--'}}</td>
+                                <td class="w120">{{row.width ? row.width : '--'}}</td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="skLoading">
+                            <tr class="border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of [].constructor(8)">
+                                <td *ngFor="let row of [].constructor(11)">
+                                    <app-skeleton [class]="'h20 bg-skeleton'"></app-skeleton>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </spk-reusable-tables>
+                </div>
+                
+                <ng-container *ngIf="stockList?.length === 0 && !skLoading">
+                    <app-data-not-found></app-data-not-found>
+                </ng-container>
+                
+                <app-pagination-footer [currentPage]="pagination.cur_page" [totalPage]="pagination.total_pages ? pagination.total_pages : 0" [pageLimit]="pagination.limit" [listLength]="stockList?.length" [preBtn]="!pagination.prev" [nextBtn]="!pagination.next" (preButtonClick)="changeToPagination('Previous')" (nextButtonClick)="changeToPagination('Next')" (pageChange)="changeToPage($event)">
+                </app-pagination-footer>
+            </ng-container>
+        </div>
+    </div>
+</div>
+
+

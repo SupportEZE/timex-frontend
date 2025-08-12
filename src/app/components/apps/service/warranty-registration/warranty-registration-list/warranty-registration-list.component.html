@@ -1,0 +1,258 @@
+<app-page-header [title]="'Warranty Registration'" [title1]="['Warranty Registration']" [activeitem]="'Warranty Registration List'" *ngIf="pageHeader"></app-page-header>
+
+<div class="box py-3 px-4">
+    <nav class="sm:flex sm:space-x-2 sm:rtl:space-x-reverse gap-1" aria-label="Tabs" role="tablist">
+        <ng-container *ngIf="skLoading">
+            <app-skeleton  *ngFor="let row of [].constructor(2)" [class]="'w100 h25'"></app-skeleton>
+        </ng-container>
+        <ng-container *ngIf="!skLoading">
+            <app-listing-tab *ngFor="let tab of mainTabs"
+            [tabs]="[{ name: tab.name, label: tab.label, icon: tab.icon, count: tab.count}]"
+            [activeTab]="activeTab"
+            (tabChange)="onTabChange($event.tab)"></app-listing-tab>
+        </ng-container>
+    </nav>
+    
+    <!-- Start::row-1 -->
+    <div class="row">
+        <div class="col-xl-12">
+            <app-page-sub-header [pageTitle]="'Warranty Registration List'" [listLength]="listing.length" 
+            [btnShow]="true" [refreshLabel]="'Refresh'" (onRefresh)="onRefresh()" [class]="'p-0 pt-3'" 
+            [btnShow2]="false" [addBtnLabel]="'Add Warranty'"  (button1)="goToAddPage()"
+            [btnShow3]="true" [importIcon]="'ri-download-cloud-fill'" [importLabel]="'Export Excel'" (importBtn)="downloadCSV()"
+            [btnShow4]="showChangeStatusBtn && activeTab === 'Pending'" [button4Label]="'Status Change'" (button4)="statusChange(selectedRowId)"></app-page-sub-header>
+            
+            <div class="table-responsive overflow-auto table-bordered-default">
+                <spk-reusable-tables tableClass="ti-custom-table ti-custom-table-head ti-custom-table-hover ti-head-primary whitespace-nowrap" [tableHead]="'border-b'" [columns]="getColumns()">
+                    <ng-container *ngIf="!skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker" [(ngModel)]="filter.created_at" name="createdAt" placeholder="Date Created" (ngModelChange)="onDateChange('created_at',$event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker></mat-datepicker>
+                                    </mat-form-field>  
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.created_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.created_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.created_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.user_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.user_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.user_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.site_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.site_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.site_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker1" [(ngModel)]="filter.warranty_date" name="createdAt" placeholder="Warranty Date" (ngModelChange)="onDateChange('warranty_date',$event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker1"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker1></mat-datepicker>
+                                    </mat-form-field>  
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.warranty_number" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.warranty_number) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.warranty_number=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.invoice_number" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.invoice_number) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.invoice_number=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.product_details" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.product_details) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.product_details=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                            <!-- <td>&nbsp;</td> -->
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.application_type" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.application_type) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.application_type=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.po_no" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.po_no) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.po_no=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.ro_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.ro_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.ro_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.ro_code" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.ro_code) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.ro_code=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <!-- <td>&nbsp;</td> -->
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker2" [(ngModel)]="filter.date_of_installation" name="createdAt" placeholder="Warranty Date" (ngModelChange)="onDateChange('date_of_installation',$event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker2></mat-datepicker>
+                                    </mat-form-field>  
+                                </div>
+                            </td>
+                            <!-- <td>&nbsp;</td> -->
+                        </tr>
+                        <!-- <tr class="product-list border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of listing; let i = index;">
+                            <td class="!text-center">{{(pagination.cur_page - 1) * pagination.limit + i + 1 }}</td>
+                            <td>{{ row.created_at ? (row.created_at | date:'d MMM yyyy, hh:mm a') : '--' }}</td>
+                            <td>{{row.created_name || '--'}}</td>
+                            <td>{{row?.user_name || '--'}}</td>
+                            <td>{{row?.site_name || '--'}}</td>
+                            <td>{{ row.warranty_date ? (row.warranty_date | date:'d MMM yyyy') : '--' }}</td>
+                            <td>
+                                <a class="text-primary font-semibold underline" (click)="goToDetailPage(row._id)">{{row.warranty_number || '--'}}</a>
+                            </td>
+                            <td>{{row.application_type || '--'}}</td>
+                            <td>{{row.ro_name || '--'}}</td>
+                            <td>{{row.ro_code || '--'}}</td>
+                            <td>{{row.po_no || '--'}}</td>
+                            <td>{{ row.date_of_installation ? (row.date_of_installation | date:'d MMM yyyy') : '--' }}</td>
+                            <td class="text-center">{{ row.total_product_item || '--' }}</td>
+                            <td class="text-center">{{ row.total_product_qty || '--' }}</td>
+                            <td class="!text-center">
+                                <app-icon-button [icon]="'ri-edit-line'" matTooltip="Edit" [buttonClass]="'ti-btn btn-wave  ti-btn-sm ti-btn-soft-success waves-effect waves-light'" (clickEvent)="statusChange(row._id)" *ngIf="row.status === 'Pending' && this.orgData.login_type_id === LOGIN_TYPES.ORGANIZATION_ADMIN"> </app-icon-button>
+                            </td>
+                        </tr> -->
+                        <tr class="product-list border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of listing; let i = index;">
+                            <td class="w50 task-checkbox">
+                                <ng-container *ngIf="(!selectedInvoiceId || row._id === selectedInvoiceId) && orgData?.login_type_id === LOGIN_TYPES.ORGANIZATION_ADMIN && row.status === 'Pending'">
+                                    <input class="form-check-input"
+                                    type="checkbox"
+                                    [(ngModel)]="row.checked"
+                                    (change)="toggleRowChecked(row)"
+                                    />
+                                </ng-container>
+                            </td>
+                            <td class="!text-center">{{i + 1 }}</td>
+                            <td>{{ row.created_at ? (row.created_at | date:'d MMM yyyy, hh:mm a') : '--' }}</td>
+                            <td>{{row.created_name || '--'}}</td>
+                            <td>{{row?.user_name || '--'}}</td>
+                            <td>{{row?.site_name || '--'}}</td>
+                            <td>{{ row.warranty_date ? (row.warranty_date | date:'d MMM yyyy') : '--' }}</td>
+                            <td>
+                                <a class="text-primary font-semibold underline" (click)="goToDetailPage(row._id)">{{row.warranty_number || '--'}}</a>
+                            </td>
+                            <td>{{row.invoice_number || '--'}}</td>
+                            <td>{{row.product_name || '--'}}</td>
+                            <td>{{row.total_quantity || '--'}}</td>
+                            <!-- <td>{{row.square_meter || '--'}}</td> -->
+                            <!-- <td>{{row.balance_quantity || '0'}}</td> -->
+                            <td>{{row.application_type || '--'}}</td>
+                            <td>{{row.ro_name || '--'}}</td>
+                            <td>{{row.ro_code || '--'}}</td>
+                            <td>{{row.po_no || '--'}}</td>
+                            <td>{{row.mtc_number || '--'}}</td>
+                            <td>{{ row.date_of_installation ? (row.date_of_installation | date:'d MMM yyyy') : '--' }}</td>
+                            <!-- <td class="!text-center">
+                                <app-icon-button [icon]="'ri-edit-line'" matTooltip="Edit" [buttonClass]="'ti-btn btn-wave  ti-btn-sm ti-btn-soft-success waves-effect waves-light'" (clickEvent)="statusChange(row._id)" *ngIf="row.status === 'Pending' && this.orgData.login_type_id === LOGIN_TYPES.ORGANIZATION_ADMIN"> </app-icon-button>
+                            </td> -->
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                    <ng-container *ngIf="skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of [].constructor(8)">
+                            <td *ngFor="let row of [].constructor(17)">
+                                <app-skeleton [class]="'h20 bg-skeleton'"></app-skeleton>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                </spk-reusable-tables>
+                <ng-container *ngIf="!listing.length && !skLoading">
+                    <app-data-not-found></app-data-not-found>
+                </ng-container>
+            </div>
+            
+            <app-pagination-footer [currentPage]="pagination.cur_page" [totalPage]="pagination.total_pages" [pageLimit]="pagination.limit" [listLength]="listing.length" [preBtn]="!pagination.prev" [nextBtn]="!pagination.next" (preButtonClick)="changeToPagination('Previous')" (nextButtonClick)="changeToPagination('Next')" (pageChange)="changeToPage($event)"></app-pagination-footer>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

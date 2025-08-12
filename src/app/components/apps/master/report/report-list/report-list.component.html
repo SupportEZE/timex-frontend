@@ -1,0 +1,153 @@
+<app-page-header [title]="'Report'" [title1]="['Report']" [activeitem]="'Report List'" *ngIf="pageHeader"></app-page-header>
+
+<div class="box py-3 px-4">
+    <div class="px-4 py-2 border-b dark:border-defaultborder/10 bg-light">
+        <p class="font-medium mb-0">Date</p> 
+        <div class="flex items-center gap-2">
+            <div class="xl:col-span-6 col-span-12 mb-3">
+                <label class="form-label">Date From<span class="text-red-500">*</span></label>
+                <mat-form-field class="mat-custom-field">
+                    <input matInput [matDatepicker]="picker" [min]="today" placeholder="Start Date" [(ngModel)]="filter.start_date" name="start_date" required #start_date="ngModel">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+            </div>
+            
+            <div class="xl:col-span-6 col-span-12 mb-3">
+                <label class="form-label">Date To<span class="text-red-500">*</span></label>
+                <mat-form-field class="mat-custom-field">
+                    <input matInput [matDatepicker]="picker1" [min]="today" placeholder="End Date" [(ngModel)]="filter.end_date" name="end_date" required #end_date="ngModel">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker1"></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                </mat-form-field>
+            </div>
+            
+            <app-icon-button [icon]="'ri-file-excel-line'" matTooltip="Go" [buttonClass]="'ti-btn btn-wave product-btn ti-btn-sm ti-btn-soft-danger waves-effect waves-light m-0'" *ngIf="filter.start_date" (clickEvent)="filter.start_date = '';dateFilter();"> </app-icon-button>
+            <app-icon-button [icon]="'ri-filter-off-line'" matTooltip="Clear" [buttonClass]="'ti-btn btn-wave product-btn ti-btn-sm ti-btn-soft-danger waves-effect waves-light m-0'" *ngIf="filter.start_date" (clickEvent)="filter.start_date = '';dateFilter();"> </app-icon-button>
+        </div>
+    </div>
+    
+    <!-- Start::row-1 -->
+    <div class="row">
+        <div class="col-xl-12">
+            <app-page-sub-header [pageTitle]="'Report List'" [listLength]="listing.length" [btnShow]="true" [refreshLabel]="'Refresh'" (onRefresh)="onRefresh()" [class]="'p-0 pt-3'" [btnShow3]="false" [importIcon]="'ri-download-cloud-fill'" [importLabel]="'Export Excel'"  (importBtn)="downloadCSV()"></app-page-sub-header>
+            
+            <div class="table-responsive overflow-auto table-bordered-default">
+                <spk-reusable-tables tableClass="ti-custom-table ti-custom-table-head ti-custom-table-hover ti-head-primary whitespace-nowrap" [tableHead]="'border-b'" [showS_No]="true" [columns]="PageHeaders">
+                    <ng-container *ngIf="!skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10">
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.created_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.created_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.created_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker" [(ngModel)]="filter.created_at" name="createdAt" placeholder="Date Created" (ngModelChange)="onDateChange('created_at', $event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker></mat-datepicker>
+                                    </mat-form-field>  
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.vendor_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.vendor_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.vendor_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.product_detail" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.product_detail) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.product_detail=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.site_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.site_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.site_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.site_code" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.site_code) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.site_code=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr class="product-list border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of listing; let i = index;">
+                            <td class="!text-center">{{ i + 1 }}</td>
+                            <td >{{row.created_name || '--'}}</td>
+                            <td>{{ row.created_at ? (row.created_at | date:'d MMM yyyy, hh:mm a') : '--' }}</td>
+                            <td>{{row.vendor_name || '--'}}</td>
+                            <td>{{row.product_name || '--'}}</td>
+                            <td>{{row.total_quantity || '--'}}</td>
+                            <td>{{row.warranty_qty || '--'}}</td>
+                            <td>{{row.square_meter || '--'}}</td>
+                            <td>{{row.mtc_no || '--'}}</td>
+                            <td>{{row.warranty_no || '--'}}</td>
+                            <td>{{row.site_name || '--'}}</td>
+                            <td>{{row.site_code || '--'}}</td>
+                            <td>{{row.po_no || '--'}}</td>
+                            <td>
+                                <span class="badge" [ngClass]="{'text-success bg-success/10': row.status === 'Recieved', 'text-warning bg-warning/10': row.status === 'Pending', 'text-danger bg-danger/10': row.status === 'Reject'}">{{row.status || '--'}}</span>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                    <ng-container *ngIf="skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of [].constructor(8)">
+                            <td *ngFor="let row of [].constructor(14)">
+                                <app-skeleton [class]="'h20 bg-skeleton'"></app-skeleton>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                </spk-reusable-tables>
+                <ng-container *ngIf="!listing.length && !skLoading">
+                    <app-data-not-found></app-data-not-found>
+                </ng-container>
+            </div>
+            
+            <app-pagination-footer [currentPage]="pagination.cur_page" [totalPage]="pagination.total_pages" [pageLimit]="pagination.limit" [listLength]="listing.length" [preBtn]="!pagination.prev" [nextBtn]="!pagination.next" (preButtonClick)="changeToPagination('Previous')" (nextButtonClick)="changeToPagination('Next')" (pageChange)="changeToPage($event)"></app-pagination-footer>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

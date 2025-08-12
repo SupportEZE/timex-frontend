@@ -1,0 +1,224 @@
+<app-page-header [title]="'Site'" [title1]="[spaceRemove.formatText(customerType)]" [activeitem]="spaceRemove.formatText(customerType) + 'Detail'" [buttonText]="'Filter'"  [icon]="'filter_list'"  [btnShow]="false" [buttonValue]="''"  [buttonText1]="activeTab === 'Basic' ? 'Edit Customer' : activeTab === 'Wallet History' ? 'Point Transfer' : '' "  [icon1]="activeTab === 'Basic' ? 'edit' : 'swap_horiz'"  [btnShow1]="(activeTab === 'Basic' || activeTab === 'Wallet History') && accessRight?.modifyRight"  [buttonValue1]="''" (buttonClick1)="editPage($event)"></app-page-header>
+
+<!-- Start:: row-1 -->
+<div class="grid grid-cols-12 gap-x-6">
+    <div class="xl:col-span-12 col-span-12">
+        <div class="profile-banner-img">
+            <nav class="nav nav-tabs tab-style-6 mb-3 p-2 flex bg-white dark:bg-bodybg gap-1" aria-label="Tabs" role="tablist" aria-orientation="horizontal">
+                <app-listing-tab *ngFor="let tab of mainTabs()"
+                [countShow]="false"
+                [tabs]="[{ name: tab.name, label: tab.label,count: tab.count, icon: tab.icon}]"
+                [activeTab]="activeTab"
+                (tabChange)="onTabChange($event.tab)"></app-listing-tab>
+            </nav>
+            <!-- <img src="./assets/images/media/media-3.jpg" class="card-img-top" alt="..."> -->
+        </div>
+        <ng-container *ngIf="activeTab === 'Basic Detail'">
+            <div class="grid grid-cols-12 sm:gap-x-6" *ngIf="!skLoading">
+                <div class="xl:col-span-12 col-span-12">
+                    <div class="grid grid-cols-12 sm:gap-x-6">
+                        <div class="xl:col-span-12 col-span-12">
+                            <app-showcode-card [title]="'Basic Detail'" [class]="'box-title font-medium text-[15px] block text-primarytint1color'"  [titleView]="true">
+                                <ul class="ti-list-group list-group-flush border-0">
+                                    <li>
+                                        <div class="flex items-center gap-5 flex-wrap">
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span class="block font-medium text-primay" >{{basicDetail.created_at ? (basicDetail.created_at | date : 'dd MMM yyyy hh:mm a') : '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">Date Created</span>
+                                                    
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span  class="block font-medium text-primay">{{basicDetail.customer_type_name ? basicDetail.customer_type_name : '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">Customer Type</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span class="block font-medium text-primay">{{basicDetail.customer_name ? basicDetail.customer_name : '---'}}</span>
+                                                    <span  class="text-textmuted dark:text-textmuted/50 font-medium">Customer Name</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span class="block font-medium text-primay">{{basicDetail.mobile ? basicDetail.mobile : '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">Mobile No.</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    
+                                                    <span class="block font-medium text-primay">
+                                                        {{basicDetail.email ? basicDetail.email : '---'}}
+                                                    </span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">
+                                                        Email ID
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    
+                                                    <span class="block font-medium text-primay">
+                                                        {{basicDetail.customer_code ? basicDetail.customer_code :'---'}}
+                                                    </span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">
+                                                        Customer Code
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    
+                                                    <span  class="block font-medium text-primay">{{basicDetail.gst_no ? basicDetail.gst_no : '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">GST No.</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span class="block font-medium text-primay" >{{basicDetail.address ? (basicDetail.address + ',') : ''}} {{basicDetail.city ? (basicDetail.city + ',') : ''}} {{basicDetail.district ? (basicDetail.district + ',') : ''}} {{basicDetail.state ? (basicDetail.state + ',') : ''}} {{basicDetail.pincode ? (basicDetail.pincode + '') : ''}} {{basicDetail.country ? (basicDetail.country + '') : ''}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium">Address</span>
+                                                    
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                            <div class="flex items-center me-2 flex-wrap">
+                                                <div>
+                                                    <span class="block font-medium text-primay"> {{basicDetail.updated_at ?  (basicDetail.updated_at | date : 'dd MMM yyyy hh:mm a') : '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium" >Updated At</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex gap-2 items-center me-2 flex-wrap">
+                                                <div>
+                                                    <div class="flex gap-2">
+                                                        <span [ngClass]="basicDetail?.status === 'Active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'" 
+                                                        class=" text-[11px] badge">{{basicDetail?.status}}</span>
+                                                        <app-toggle [class]="'ti-switch-custom'" [checked]="basicDetail?.status === 'Active' ? true: false" 
+                                                        (checkedChange)="onToggleChange($event, basicDetail?._id, basicDetail?.status)" *ngIf="accessRight?.approveRight"></app-toggle>
+                                                    </div>
+                                                    <span class="block text-textmuted dark:text-textmuted/50 font-medium">Status</span>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                            <div class="flex items-center me-2 flex-wrap" *ngIf="basicDetail.user_name">
+                                                <div>
+                                                    <span class="block font-medium text-primay"> {{basicDetail.user_name || '---'}} | {{basicDetail.user_mobile || '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium" >Assigned User Name</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center me-2 flex-wrap" *ngIf="basicDetail.username">
+                                                <div>
+                                                    <span class="block font-medium text-primay"> {{basicDetail.username || '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium" >Username</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center me-2 flex-wrap" *ngIf="basicDetail.password">
+                                                <div>
+                                                    <span class="block font-medium text-primay"> {{basicDetail.password || '---'}}</span>
+                                                    <span class="text-textmuted dark:text-textmuted/50 font-medium" >Password</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </app-showcode-card>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sk Loading Start -->
+            <div class="grid grid-cols-12 sm:gap-x-6" *ngIf="skLoading">
+                <div class="xl:col-span-3 col-span-12">
+                    <app-showcode-card>
+                        <div class="box-body border-b border-dashed border-defaultborder dark:border-defaultborder/10">
+                            <div class="text-center">
+                                <span class="avatar avatar-xxl avatar-rounded  mb-3">
+                                    <app-skeleton [class]="'w90 h90 radius'"></app-skeleton>
+                                </span>
+                                <h5 class="font-semibold mb-1">
+                                    <app-skeleton [class]="'wp100 h10 mt15'"></app-skeleton>
+                                </h5>
+                                <span class="block font-medium text-textmuted dark:text-textmuted/50 mb-2">
+                                    <app-skeleton [class]="'wp70 h10 mt10'"></app-skeleton>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex mb-0 flex-wrap gap-4 p-4 border-b border-dashed border-defaultborder dark:border-defaultborder/10"> 
+                            <div class="flex items-center gap-4 me-2 flex-wrap" *ngFor="let row of [].constructor(3)">
+                                <div>
+                                    <span class="avatar avatar-md">
+                                        <app-skeleton [class]="'w50 h50'"></app-skeleton>
+                                    </span>
+                                </div>
+                                <div>
+                                    <div>                                
+                                        <app-skeleton [class]="'w150 h10'"></app-skeleton>
+                                    </div>
+                                    <div>
+                                        <app-skeleton [class]="'w100 h10 mt5'"></app-skeleton>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </app-showcode-card>
+                </div>
+                <div class="xl:col-span-9 col-span-12">
+                    
+                    <div class="grid grid-cols-12 sm:gap-x-6">
+                        <div class="xl:col-span-12 col-span-12">
+                            <app-showcode-card [titleView]="false"  [view]="false">
+                                <div >
+                                    <!-- *ngIf="skLoading" -->
+                                    <div class="flex gap-2 mb-1 flex-wrap">
+                                        <div class="flex items-center" *ngFor="let card of [].constructor(10)">
+                                            <app-skeleton [class]="'w180'"></app-skeleton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </app-showcode-card>
+                            
+                        </div>
+                        <div class="xl:col-span-6 col-span-12">
+                            <app-showcode-card [titleView]="false"  [view]="false">
+                                <app-skeleton [class]="'wp100 h35 mb-3'" *ngFor="let card of [].constructor(7)"></app-skeleton>
+                            </app-showcode-card>
+                        </div>
+                        
+                        <div class="xl:col-span-6 col-span-12">
+                            <app-showcode-card [titleView]="false"  [view]="false">
+                                <app-skeleton [class]="'wp100 h35 mb-3'" *ngFor="let card of [].constructor(7)"></app-skeleton>
+                            </app-showcode-card>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sk Loading End -->
+        </ng-container>
+        
+        <ng-container *ngIf="activeTab === 'Invoice'">
+            <app-invoice-list [basicDetail]="basicDetail" [pageHeader]="false"></app-invoice-list>
+        </ng-container>
+        
+        <ng-container *ngIf="activeTab === 'Stock'">
+            <app-stock [basicDetail]="basicDetail" [pageHeader]="false"></app-stock>
+        </ng-container>
+        
+        <ng-container *ngIf="activeTab === 'warranty-registration'">
+            <app-warranty-registration-list [basicDetail]="basicDetail" [pageHeader]="false"></app-warranty-registration-list>
+        </ng-container>
+    </div>
+</div>
+<!-- End:: row-1 -->

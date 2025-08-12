@@ -1,0 +1,85 @@
+<app-page-header [title]="'Site'" [title1]="[spaceRemove.formatText(customerType)]"
+[activeitem]="spaceRemove.formatText(customerType)"></app-page-header>
+
+<div class="box py-3 px-4">
+    <!-- Start::row-1 -->
+    <div class="row">
+        <div class="col-xl-12">
+            <app-page-sub-header [pageTitle]="spaceRemove.formatText(customerType) +' List'" [listLength]="listing.length" [btnShow]="true"
+            [refreshLabel]="'Refresh'" (onRefresh)="onRefresh()" [class]="'p-0 pt-3'"
+            [btnShow2]="this.orgData.login_type_id === LOGIN_TYPES.PRIMARY" [addBtnLabel]="'Add New'" (button1)="goToAddPage()"
+            [btnShow3]="true" [importIcon]="'ri-download-cloud-fill'" [importLabel]="'Export Excel'"  (importBtn)="downloadCSV()"></app-page-sub-header>
+            
+            
+            <div class="overflow-auto max-h-[600px] w-full border rounded">
+                <!-- 🔹 Skeleton -->
+                <!-- 🔹 Actual Table -->
+                <table *ngIf="!skLoading && vendors.length" class="table-auto border border-gray-300 w-full text-center min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="border px-4 py-2 font-semibold">S.No</th>
+                            <th class="border px-4 py-2 font-semibold">Name</th>
+                            <th class="border px-4 py-2 font-semibold">Mobile</th>
+                            <th class="border px-4 py-2 font-semibold">Vendor Detail</th>
+                            <th *ngFor="let product of productHeaders" class="border px-4 py-2 font-semibold" [ngClass]="product.colorClass">
+                                {{ product.name }} ({{product.width}} & {{product.length}})
+                            </th>
+                            <th class="border px-4 py-2 font-semibold">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let vendor of vendors; let i = index">
+                            <td class="border px-4 py-2">{{ i + 1 }}</td>
+                            <td class="border px-4 py-2 text-primary font-medium underline cursor-pointer" matTooltip="{{ vendor.name }}" (click)="goToDetailPage(vendor._id)">{{ vendor.name ? (vendor.name | titlecase) : '---' }}</td>
+                            <td class="border px-4 py-2">{{ vendor.mobile }}</td>
+                            <td class="border px-4 py-2">{{vendor.vendor_detail ? (vendor.vendor_detail | titlecase) : '---'}}</td>
+                            
+                            <td *ngFor="let product of productHeaders" class="border px-4 py-2">
+                                {{ vendor.products[product.code]?.purchase || 0 }}
+                            </td>
+                            
+                            <td class="border px-4 py-2">{{ vendor.total_consume }}</td>
+                        </tr>
+                        
+                        <!-- 🔹 Grand Total -->
+                        <tr class="font-bold bg-gray-200">
+                            <td class="border px-4 py-2" colspan="4">Total</td>
+                            <td *ngFor="let product of productHeaders" class="border px-4 py-2">
+                                {{ getTotals(product.code).purchase }}
+                            </td>
+                            <td class="border px-4 py-2">{{ grandTotal.consume }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- 🔹 No Data -->
+            </div>
+            <table *ngIf="skLoading" class="table-auto border border-gray-300 w-full min-w-[1200px] text-center">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border px-4 py-2" colspan="100%">
+                            <app-skeleton [class]="'h6 w-full bg-skeleton'"></app-skeleton>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let _ of [].constructor(8)" class="border-b !border-defaultborder dark:!border-defaultborder/10">
+                        <td *ngFor="let __ of [].constructor(15)" class="border px-2 py-2">
+                            <app-skeleton [class]="'h20 bg-skeleton block w-full'"></app-skeleton>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <ng-container *ngIf="!vendors.length && !skLoading">
+                <app-data-not-found></app-data-not-found>
+            </ng-container>
+                        
+            <app-pagination-footer [currentPage]="pagination.cur_page" [totalPage]="pagination.total_pages"
+            [pageLimit]="pagination.limit" [listLength]="listing.length" [preBtn]="!pagination.prev"
+            [nextBtn]="!pagination.next" (preButtonClick)="changeToPagination('Previous')"
+            (nextButtonClick)="changeToPagination('Next')"
+            (pageChange)="changeToPage($event)"></app-pagination-footer>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

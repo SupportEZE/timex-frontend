@@ -1,0 +1,309 @@
+name: Scan And Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action_type:
+        description: "Enter 'scan' (for scanning), 'development' (for development deployment), or 'production' (for production deployment)"
+        required: true
+      client_name:
+        description: "Client Folder Name (Required only for 'development')"
+        required: false
+      base_domain:
+        description: "Client Base Domain (e.g. xyz.ezeone.tech) (Required only for 'development')"
+        required: false
+
+jobs:
+  conditional-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏳ Check Inputs
+        run: |
+          echo "Action Type: ${{ github.event.inputs.action_type }}"
+          if [[ "${{ github.event.inputs.action_type }}" == "development" ]]; then
+            if [[ -z "${{ github.event.inputs.client_name }}" ]]; then
+              echo "❌ client_name is required for development deployment."
+              exit 1
+            fi
+            if [[ -z "${{ github.event.inputs.base_domain }}" ]]; then
+              echo "❌ base_domain is required for development deployment."
+              exit 1
+            fi
+          fi
+          echo "✅ Input validation passed."
+
+  validate-client-folder:
+    needs: conditional-job
+    if: ${{ github.event.inputs.action_type == 'development' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚫 Validate client folder exists on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 43.204.204.109
+          username: ec2-user
+          port: 22786
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            CLIENT_NAME="${{ github.event.inputs.client_name }}"
+            if [ ! -d "/var/www/html/frontend/$CLIENT_NAME" ]; then
+              echo "❌ ERROR: Client folder '/var/www/html/frontend/$CLIENT_NAME' does not exist."
+              exit 1
+            else
+              echo "✅ Client folder '$CLIENT_NAME' exists."
+            fi
+
+  scan-job:
+    needs: conditional-job
+    if: ${{ github.event.inputs.action_type == 'scan' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 🧹 Clean up macOS-only deps
+        run: |
+          jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
+          if [ -f package-lock.json ]; then
+            sed -i '/"@rollup\/rollup-darwin-arm64"/,+5d' package-lock.json
+          fi
+
+      - name: 📦 Install dependencies
+        run: |
+          npm install --legacy-peer-deps || true
+          # Force install ng-apexcharts version compatible with Angular 19
+          npm install ng-apexcharts@1.7.4 --save
+          npm install sortablejs flatpickr filepond luxon overlayscrollbars --save
+          npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
+
+
+      - name: 🔍 Run SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip
+          export PATH="$PWD/sonar-scanner-5.0.1.3006-linux/bin:$PATH"
+          sonar-scanner \
+            -Dsonar.projectKey=CRM-Tailwind \
+            -Dsonar.sources=src \
+            -Dsonar.host.url=http://13.203.181.169:9000 \
+            -Dsonar.login=$SONAR_TOKEN
+
+      - name: 🛡️ Run Bearer scan
+        run: |
+          curl -sSLo bearer.tar.gz https://github.com/Bearer/bearer/releases/download/v1.49.0/bearer_1.49.0_linux_amd64.tar.gz
+          tar -xzf bearer.tar.gz
+          chmod +x bearer
+          ./bearer scan . --format sarif --output bearer-report.sarif || true
+
+      - name: 📤 Upload Bearer Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bearer-report
+          path: bearer-report.sarif
+
+      - name: 📧 Email scan reports
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Code Scan Reports - Sonar & Bearer
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+          secure: false
+          attachments: bearer-report.sarif
+          body: |
+            Hello,
+
+            Code Quality and Security scan has been done. Please check the reports:
+            - Sonar: http://13.203.181.169:9000/dashboard?id=CRM-Tailwind
+            - Bearer: Attached.
+
+            Regards,
+            CI/CD Bot
+
+  dev-deploy-job:
+    needs: validate-client-folder
+    if: ${{ github.event.inputs.action_type == 'development' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Customize <base href> and domain
+        run: |
+          CLIENT_NAME="${{ github.event.inputs.client_name }}"
+          CLIENT_DOMAIN="${{ github.event.inputs.base_domain }}"
+          sed -i 's|<base href="/" />|<base href="/'"$CLIENT_NAME"'/" />|g' src/index.html
+          sed -i -E "s|https://[a-zA-Z0-9.-]+\.ezeone\.tech/|https://$CLIENT_DOMAIN/|g" src/app/core/services/api/api.service.ts
+          sed -i -E "s|https://[a-zA-Z0-9.-]+\.ezeone\.tech:8005/|https://$CLIENT_DOMAIN:8005/|g" src/app/core/services/api/api.service.ts
+          sed -i -E "s|https://[a-zA-Z0-9.-]+\.ezeone\.tech:8008/api/|https://$CLIENT_DOMAIN:8008/api/|g" src/app/core/services/api/api.service.ts
+          sed -i -E "s|https://[a-zA-Z0-9.-]+\.ezeone\.tech:8005/auth/|https://$CLIENT_DOMAIN:8005/auth/|g" src/app/core/services/api/api.service.ts
+          sed -i -E "s|https://[a-zA-Z0-9.-]+\.ezeone\.tech:8006/admin|https://$CLIENT_DOMAIN:8006/admin|g" src/app/core/services/api/api.service.ts
+
+      - name: 🧹 Clean up macOS-only deps
+        run: |
+          jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
+          sed -i '/"@rollup\/rollup-darwin-arm64"/,+5d' package-lock.json
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          npm install sortablejs flatpickr apexcharts filepond luxon overlayscrollbars --save
+          npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
+
+      - name: 🛠️ Build Angular app
+        run: npm run build -- --output-path=preview
+
+      - name: 📦 Zip build
+        run: zip -r build.zip preview/
+
+      - name: ☁️ Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-build
+          path: build.zip
+          retention-days: 2
+
+      - name: 📦 Copy to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 43.204.204.109
+          username: ec2-user
+          port: 22786
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: build.zip
+          target: /home/ec2-user/frontend
+
+      - name: 🚀 Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 43.204.204.109
+          username: ec2-user
+          port: 22786
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            CLIENT_NAME="${{ github.event.inputs.client_name }}"
+            TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+            BACKUP_DIR="/home/ec2-user/frontend/${CLIENT_NAME}_frontend_backup_$TIMESTAMP"
+
+            echo "📁 Backing up existing deployment to $BACKUP_DIR ..."
+            if [ -d "/var/www/html/frontend/$CLIENT_NAME" ]; then
+              rm -rf /home/ec2-user/frontend/preview/browser/*
+              cp -r /var/www/html/frontend/$CLIENT_NAME "$BACKUP_DIR"
+              echo "✅ Backup complete."   
+              find /var/www/html/frontend/$CLIENT_NAME -mindepth 1 \
+                 -path "/var/www/html/frontend/$CLIENT_NAME/brand-logos" -prune -o -exec rm -rf {} +
+            else
+              echo "⚠️ Warning: No existing folder to backup."
+            fi
+
+            echo "📦 Unzipping new build and deploying..."
+            cd /home/ec2-user/frontend
+            unzip -o build.zip
+            cp -r preview/browser/. /var/www/html/frontend/$CLIENT_NAME/
+            echo "🚀 Development deployment complete."
+
+  prod-deploy-job:
+    needs: conditional-job
+    if: ${{ github.event.inputs.action_type == 'production' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🧹 Clean up macOS-only deps
+        run: |
+          jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
+          if [ -f package-lock.json ]; then
+            sed -i '/"@rollup\/rollup-darwin-arm64"/,+5d' package-lock.json
+          fi
+
+
+      - name: 📦 Install dependencies
+        run: |
+          # Remove lockfile to avoid pulling newer Angular 20-only versions
+          rm -f package-lock.json
+          # Install using legacy peer deps to match local npm behavior
+          npm install --legacy-peer-deps
+          npm install sortablejs flatpickr apexcharts filepond luxon overlayscrollbars --save
+          npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
+
+
+      - name: 🔨 Build Angular app
+        run: npm run build
+ 
+
+      - name: 🛠️ Build Angular app
+        run: npm run build -- --output-path=prod-build
+
+      - name: 📦 Zip build
+        run: zip -r build.zip prod-build/
+
+      - name: ☁️ Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-angular-build
+          path: build.zip
+          retention-days: 2
+
+      - name: 📦 Copy to production server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 52.66.51.37
+          username: ec2-user
+          port: 22786
+          key: ${{ secrets.SSH_PROD_KEY }}
+          source: build.zip
+          target: /home/ec2-user/frontend
+
+      - name: 🚀 Deploy to production
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 52.66.51.37
+          username: ec2-user
+          port: 22786
+          key: ${{ secrets.SSH_PROD_KEY }}
+          script: |
+            TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+            BACKUP_DIR="/home/ec2-user/frontend/timex_backup_$TIMESTAMP"
+
+            echo "📁 Creating backup directory: $BACKUP_DIR"
+            mkdir -p "$BACKUP_DIR"
+
+            echo "📁 Backing up current /var/www/html to $BACKUP_DIR ..."
+            rm -rf /home/ec2-user/frontend/prod-build/browser/*
+            find /var/www/html/crm -maxdepth 1 -type f \( \
+              -name '*chunk*.js' -o \
+              -name '*main*.js' -o \
+              -name '*polyfills*.js' -o \
+              -name '*styles*.css' -o \
+              -name '*scripts*.js' \
+            \) -exec cp -t "$BACKUP_DIR" {} +
+            echo "✅ Backup complete."
+
+            echo "🧹 Removing old chunk/runtime/build files from /var/www/html ..."
+            find /var/www/html/crm -type f \( \
+              -name "*chunk*.js" -o \
+              -name "*main*.js" -o \
+              -name '*styles*.css' -o \
+              -name "*polyfills*.js" -o \
+              -name '*scripts*.js' \
+            \) -exec rm -f {} +
+
+            echo "📦 Unzipping new build..."
+
+            cd /home/ec2-user/frontend
+            unzip -o build.zip
+
+            echo "🚀 Deploying to /var/www/html ..."
+            cp -r prod-build/browser/. /var/www/html/crm/
+            echo "✅ Production deployment complete."

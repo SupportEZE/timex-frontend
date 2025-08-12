@@ -1,0 +1,259 @@
+<div class="grid grid-cols-12 authentication authentication-cover-main mx-0">
+    <div class="xxl:col-span-6 xl:col-span-7 col-span-12">
+        <div class="grid grid-cols-12 justify-center items-center h-full bg-white">
+            <div class="xxl:col-span-2 xl:col-span-2 lg:col-span-3 md:col-span-3 sm:col-span-2 col-span-12"></div>
+            <div class="xxl:col-span-8 xl:col-span-8 lg:col-span-6 md:col-span-6 sm:col-span-8 col-span-12 px-3">
+                <div class="box my-auto border border-defaultborder dark:border-defaultborder/10">
+                    <div class="box-body p-[3rem]">
+                        
+                        <!-- <nav class="nav nav-tabs tab-style-8 scaleX md:flex block justify-around border border-dashed dark:border-defaultborder/10 border-b-0 bg-light rounded-sm mb-4" id="myTab1" role="tablist">
+                            <button
+                            type="button"
+                            class="nav-link !p-4 md:w-auto w-full"
+                            [ngClass]="{'active': activeLoginTab === 'backend_team'}"
+                            style="padding: 4px 15px !important">
+                            <i class="ri-admin-line me-2 align-middle"></i>Backend Team</button>
+                            
+                            <button
+                            type="button"
+                            class="nav-link !p-4 md:w-auto w-full"
+                            [ngClass]="{'active': activeLoginTab === 'individual'}"
+                            (click)="switchTab('individual')"
+                            style="padding: 4px 15px !important">
+                            <i class="ri-user-3-line me-2 align-middle"></i>Individual</button>
+                        </nav> -->
+                        
+                        <div class="flex items-center">
+                            <ng-container *ngIf="activeLoginTab === 'backend_team'">
+                                <ng-container *ngIf="activeTab === 'login'">
+                                    <div class="wp100 animate__animated animate__slideInRight">
+                                        <form [formGroup]="loginForm" (ngSubmit)="submit()">
+                                            <p class="font-semibold !mb-1 text-[1rem] mb-4">Sign In</p>
+                                            <p class="mb-4 text-textmuted dark:text-textmuted/50 font-normal">Welcome back</p>
+                                            <div class="grid grid-cols-12 gap-y-4">
+                                                <div class="xl:col-span-12 col-span-12">
+                                                    <label for="signup-firstname" class="ti-form-label text-default">User Name</label>
+                                                    
+                                                    <div class="relative">
+                                                        <input class="ti-form-input rounded-sm ps-11 focus:z-10" id="signup-firstname" placeholder="User Name" autocomplete formControlName="username" required>
+                                                        <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none z-20 ps-4 text-[1rem] opacity-60">
+                                                            <i class="ri-user-fill"></i>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div *ngIf="loginForm.controls['username']?.invalid && loginForm.controls['username']?.touched" class="float-end font-medium text-danger text-[0.75rem]">
+                                                        Username is required
+                                                    </div>
+                                                </div>
+                                                <div class="xl:col-span-12 col-span-12">
+                                                    <label for="signin-password" class="ti-form-label text-default block">Password</label>
+                                                    
+                                                    <div class="relative">
+                                                        <input [type]="showPassword ? 'text' : 'password'" class="ti-form-input rounded-sm ps-11 focus:z-10" id="signin-password" placeholder="Password" autocomplete="off" formControlName="password" [(ngModel)]="password" required>
+                                                        <a *ngIf="password"  class="show-password-button text-textmuted dark:text-textmuted/50 p-3" (click)="togglePassword()">
+                                                            <i class="{{toggleClass}}  align-middle"></i>
+                                                        </a>
+                                                        <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none z-20 ps-4 text-[1rem] opacity-60">
+                                                            <i class="ri-lock-password-fill"></i>
+                                                        </div>
+                                                        <div *ngIf="loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched" class="float-end font-medium text-danger text-[0.75rem]">
+                                                            Password is required
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center my-4 authentication-barrier" *ngIf="authOrgData?.social?.length">
+                                                <span class="opacity-40 text-[0.6875rem]">Our Social Handles</span>
+                                            </div>
+                                            <div class="flex items-center justify-between gap-2 mb-4">
+                                                <ng-container *ngFor="let item of authOrgData?.social">
+                                                    <a class="ti-btn ti-btn-light !border  !border-defaultborder dark:!border-defaultborder/10 flex items-center justify-center flex-grow gap-0" [href]="item.social_url" target="_blank" *ngIf="['Facebook', 'Instagram', 'Linkedin'].includes(item.title)">
+                                                        <span class="!text-primary avatar avatar-xs bg-primary/10">
+                                                            <i [ngClass]="iconMap[item.title] || 'ri-share-fill'" class="text-[0.8125rem]"></i>
+                                                        </span>
+                                                        <span class="leading-none ms-2 text-[0.8125rem] text-default font-medium">{{ item.title }}</span>
+                                                    </a>
+                                                </ng-container>
+                                            </div>
+                                            <div class="grid mt-4">
+                                                <app-button [buttonType]="'submit'" [buttonClass]="'ti-btn ti-btn-primary m-0 wp100'" [disabled]="api.disabled" [label]="'Login'" [formType]="'add'" [iconClass]="'ri-arrow-right-line'"  [loadingIconClass]="'ri-loader-2-fill'"></app-button>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="text-textmuted dark:text-textmuted/50 mt-4 mb-0">Powered By  
+                                                    <a href="https://ezeonetech.com/" class="text-primary font-semibold">EzeOne Technologies Private Limited</a>
+                                                </p>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="xxl:col-span-2 xl:col-span-2 lg:col-span-3 md:col-span-3 sm:col-span-2 col-span-12"></div>
+        </div>
+    </div>
+    <div class="xxl:col-span-6 xl:col-span-5 lg:col-span-12 xl:block hidden px-0">
+        <div class="authentication-cover overflow-hidden">
+            <div class="authentication-cover-logo"> 
+                <!-- <a href="https://timexbond.com/" target="_blank"> 
+                    <img src="./assets/images/brand-logos/desktop-white.png" alt="logo" class="desktop-white"> 
+                </a>  -->
+            </div>
+            <div class="aunthentication-cover-content flex items-center justify-center">
+                <div>
+                    <div class="">
+                        <div class="mb-5 flex justify-center">
+                            <div class="">
+                                <div class="login-swiper">
+                                    <swiper-container #swiperContainer1 class="swiper mySwiper"  space-between="30" slides-per-view="1" slides-per-group="1"   autoplay-delay="2000" pagination="true" pagination-clickable="true"  autoplay-disable-on-interaction="false">
+                                        <swiper-slide *ngFor="let image of webBanner; index as i">
+                                            <div class="swiper-slide">
+                                                <img [src]="image.src" alt="banner {{ i + 1 }}" class="w-full h-auto object-cover" />
+                                            </div>
+                                        </swiper-slide>
+                                    </swiper-container>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <!-- <div class="mb-5 flex justify-center gap-3" *ngIf="authOrgData?.org?.play_store_link || authOrgData?.org?.app_store_link">
+                            <a href="https://timexbond.com/" target="_blank" *ngIf="authOrgData?.org?.play_store_link">
+                                <img src="./assets/images/media/media-93.svg" alt="google-play" style="height: 40px;">
+                            </a>
+                            
+                            <a href="https://timexbond.com/" target="_blank" *ngIf="authOrgData?.org?.app_store_link">
+                                <img src="./assets/images/media/media-94.png" alt="apple-store" style="height: 40px;">
+                            </a>
+                        </div> -->
+                    </div>                           
+                    
+                    <h6 class="text-white mb-3 font-semibold text-[1.5rem] text-center">{{authOrgData?.org?.title || '--'}}</h6>
+                    <!-- <p class="text-white mb-1 text-[15px] font-semibold text-center">{{authOrgData?.org?.sub_title || '--'}}</p> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ----Backup ---- -->
+<!-- <div id="segment-1"  class="hidden" role="tabpanel" aria-labelledby="segment-item-1">
+    <div class="box my-6" >
+        <div class="box-body !p-[3rem]">
+            <div class="mb-3 flex justify-center">
+                <a [routerLink]="['/dashboards/sales']">
+                    <img src="./assets/images/brand-logos/desktop-logo.png" alt="logo" class="desktop-logo">
+                    <img src="./assets/images/brand-logos/desktop-white.png" alt="logo" class="desktop-white">
+                </a>
+            </div>
+            <form [formGroup]="loginForm" (ngSubmit)="login()" >
+                @if(errorMessage.length > 0){
+                
+                <p class="text-danger">  
+                    {{errorMessage}}</p>
+                    }
+                    @if(_error.message.length > 0){   
+                    <p class="text-danger">{{_error.message}} </p>
+                    }
+                    <p class="h4 font-semibold !mb-1">Sign In</p>
+                    <p class="mb-4 text-textmuted dark:text-textmuted/50 font-normal">Welcome back</p>
+                    <div class="grid grid-cols-12 gap-y-4">
+                        <div class="xl:col-span-12 col-span-12">
+                            <label for="signup-firstname" class="ti-form-label text-default">Use Name</label>
+                            <input type="email" class="form-control" id="signup-firstname" placeholder="User Name" autocomplete formControlName="username"
+                            [ngModel]="email" required>
+                        </div>
+                        <div class="xl:col-span-12 col-span-12">
+                            <label for="signin-password" class="ti-form-label text-default block">Password<a routerLink="/authentication/reset-password/basic" class="float-end text-danger opacity-50 font-medium text-[0.75rem]">Forget password ?</a></label>
+                            <div class="relative">
+                                <input type="password" [type]="showPassword ? 'text' : 'password'" class="form-control" id="signin-password" placeholder="password"  autocomplete placeholder="password"
+                                [type]="showPassword ? 'text' : 'password'" autocomplete
+                                placeholder="Password" formControlName="password"
+                                [ngModel]="password" required>
+                                <a href="javascript:void(0);" class="show-password-button text-textmuted dark:text-textmuted/50" (click)="togglePassword()"><i class="{{toggleClass}}  align-middle"></i></a>
+                                
+                            </div>
+                            <div class="mt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                                    <label class="form-check-label text-textmuted dark:text-textmuted/50 font-normal text-[0.75rem]" for="defaultCheck1">
+                                        Remember password ?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center my-4 authentication-barrier">
+                        <span class="opacity-40 text-[0.6875rem]">OR SignIn With</span>
+                    </div>
+                    <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+                        <button class="ti-btn ti-btn-light ti-btn-w-lg !border !border-defaultborder dark:!border-defaultborder/10 flex items-center justify-center flex-grow">
+                            <span class="avatar avatar-xs">
+                                <img src="./assets/images/media/apps/google.png" alt="">
+                            </span>
+                            <span class="leading-none ms-2 text-[0.8125rem] text-default font-medium">Google</span>
+                        </button>
+                        <button class="ti-btn ti-btn-light ti-btn-w-lg !border  !border-defaultborder dark:!border-defaultborder/10 flex items-center justify-center flex-grow">
+                            <span class="avatar avatar-xs">
+                                <img src="./assets/images/media/apps/facebook.png" alt="">
+                            </span>
+                            <span class="leading-none ms-2 text-[0.8125rem] text-default font-medium">Facebook</span>
+                        </button>
+                    </div>
+                    <div class="grid mt-4">
+                        <button  [disabled]="!loginForm.valid || authservice.showLoader" autofocus                                    [class.loader--text]="authservice.showLoader" class="ti-btn ti-btn-primary{{                                    disabled                                    }}" >Sign In</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div> 
+    </div> -->

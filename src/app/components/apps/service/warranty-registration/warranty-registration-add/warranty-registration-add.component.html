@@ -1,0 +1,173 @@
+<app-page-header [title]="'Warranty Registration'" [title1]="['Warranty Registration']" [activeitem]="'Warranty Registration'"></app-page-header>
+
+<div class="xl:col-span-12 col-span-12">
+    <form [formGroup]="addForm" (ngSubmit)="onSubmit()">
+        <div class="box">
+            <div class=" p-4">
+                
+                <div class="grid grid-cols-12 sm:gap-x-6">
+                    <div class="xl:col-span-12 col-span-12 mb-5" *ngIf="warranty_items?.length">
+                        <div class="table-responsive overflow-auto table-bordered-default">
+                            <spk-reusable-tables tableClass="ti-custom-table ti-custom-table-head ti-custom-table-hover ti-head-primary whitespace-nowrap" [columns]="getColumns()" [showCheckbox]="false">
+                                <tr *ngFor="let row of warranty_items; let i = index;">
+                                    <td class="w50 text-center">{{i + 1 }}</td>
+                                    <td>{{row.product_name ? (row.product_name | titlecase) : '---'}}</td>
+                                    <td class="w150">{{row.product_code ? row.product_code : '---'}}</td>
+                                    <td class="w120 text-center">{{row.total_quantity ? row.total_quantity : '0'}}</td>
+                                    <td class="w120 text-center">
+                                        <spk-input  [formControlName]="'inputQty' + i"
+                                        class="remove-default-class" [class]="'w80'" type="number" [fieldReq]="false" (valueChange)="qtyChange(row, i)"></spk-input>
+                                        <!-- <span class="text-danger" *ngIf="row.total_quantity === 0">0</span> -->
+                                    </td>
+                                    <!-- <td class="w120 text-center">{{row.square_meter ? row.square_meter : '0'}}</td> -->
+                                    <td>{{row.consume_quantity || '0'}}</td>
+                                    <td>{{row.balance_quantity || '0'}}</td>
+                                    <td class="w120">{{row.batch_no ? row.batch_no : '--'}}</td>
+                                    <td class="w120">{{row.product_grade ? row.product_grade : '--'}}</td>
+                                    <td class="w120">{{row.color_code ? row.color_code : '--'}}</td>
+                                    <td class="w120">{{row.length ? row.length : '--'}}</td>
+                                    <td class="w120">{{row.width ? row.width : '--'}}</td>
+                                </tr>
+                            </spk-reusable-tables>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                
+                <div class="dropdown-divider my-2 border"></div>
+                
+                <div class="grid grid-cols-12 sm:gap-x-6">
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-ng-select
+                        formControlName="user_id"
+                        label="user"
+                        [fieldReq]="true"
+                        [options]="this.CommonApiService.userData"
+                        [search]="true"  
+                        (searchChanged)="onSearch($event, 'user')"
+                        (selectedChange)="findName($event, 'user'); this.CommonApiService.getCustomerData($event)"></spk-ng-select>
+                    </div>
+                    
+                    <!-- <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-ng-select 
+                        formControlName="customer_type_id" 
+                        label="Site Type"
+                        [fieldReq]="true"
+                        [options]="CommonApiService.customerTypeData"
+                        (selectedChange)="CommonApiService.getCustomerData($event)"></spk-ng-select>
+                    </div> -->
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-ng-select 
+                        formControlName="site_id" 
+                        label="Site Name"  
+                        [fieldReq]="true"
+                        [options]="CommonApiService.customerData"
+                        (selectedChange)="findName($event, 'site')"></spk-ng-select>
+                    </div>
+                    
+                    <div class="xl:col-span-3 col-span-12">
+                        <!-- <spk-flatpickr
+                        placeholder="Warranty Date"
+                        label="Warranty Date"
+                        [fieldReq]="true" 
+                        [max]="today"
+                        class="form-control custom-datepickr"
+                        formControlName="warranty_date"></spk-flatpickr> -->
+                        <label class="form-label">Warranty Date<span class="text-red-500">*</span></label>
+                        <mat-form-field class="mat-custom-field">
+                            <input matInput [matDatepicker]="picker2" [max]="today" formControlName="warranty_date" placeholder="Select Warranty Date">
+                            <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+                            <mat-datepicker #picker2></mat-datepicker>
+                        </mat-form-field>
+                        <div *ngIf="addForm.get('warranty_date')?.invalid && addForm.get('warranty_date')?.touched" class="error">
+                            Warranty Date is required.
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-input label="Warranty Number"  formControlName="warranty_number" [fieldReq]="true" class="remove-default-class" type="text"></spk-input>
+                    </div>                     -->
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-input label="PO Number"  formControlName="po_no" [fieldReq]="true" class="remove-default-class" type="text"></spk-input>
+                    </div>
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-input label="RO Name"  formControlName="ro_name" [fieldReq]="true" class="remove-default-class" type="text"></spk-input>
+                    </div>
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-input label="RO Code"  formControlName="ro_code" [fieldReq]="true" class="remove-default-class" type="text"></spk-input>
+                    </div>
+
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-input label="MTC No."  formControlName="mtc_number" [fieldReq]="true" class="remove-default-class" type="text"></spk-input>
+                    </div>
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <spk-ng-select formControlName="application_type" label="Application Type" [fieldReq]="true" [options]="applicationType"></spk-ng-select>
+                    </div>
+                    
+                    <div class="xl:col-span-3 col-span-12 mb-3">
+                        <!-- <spk-flatpickr
+                        placeholder="Date Of Installation"
+                        label="Date Of Installation"
+                        [fieldReq]="true" 
+                        [max]="today"
+                        class="form-control custom-datepickr"
+                        formControlName="date_of_installation"></spk-flatpickr> -->
+                        <label class="form-label">Date Of Installation<span class="text-red-500">*</span></label>
+                        <mat-form-field class="mat-custom-field">
+                            <input matInput [matDatepicker]="picker" [max]="today" formControlName="date_of_installation" placeholder="Select Date Of Installation">
+                            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                        <div *ngIf="addForm.get('date_of_installation')?.invalid && addForm.get('date_of_installation')?.touched" class="error">
+                            Date Of Installation is required.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-12 sm:gap-x-6">
+                    <div class="xl:col-span-4 col-span-12">
+                        <label class="form-label mb-0">Complete Site Images<span class="text-red-500">*</span></label>
+                        <file-pond 
+                        class="filepond basic-filepond" 
+                        [options]="getPondOptions('image', 3)" 
+                        [files]="pondBannerFiles1" 
+                        (onremovefile)="onFileRemove($event, 1)"
+                        (onprocessfile)="onFileProcessed($event, 'site_image', 1)"></file-pond>
+                        <p class="text-[13px] font-semibold text-right text-red-500">Upload clear project photo with RO name visible</p>
+                    </div>
+                    
+                    <div class="xl:col-span-4 col-span-12">
+                        <label class="form-label mb-0">Peel Off Images<span class="text-red-500">*</span></label>
+                        <file-pond 
+                        class="filepond basic-filepond" 
+                        [options]="getPondOptions('image', 3)" 
+                        [files]="pondBannerFiles2" 
+                        (onremovefile)="onFileRemove($event, 2)"
+                        (onprocessfile)="onFileProcessed($event, 'complete_image', 2)"></file-pond>
+                        <p class="text-[13px] font-semibold text-right text-red-500">Upload clear photo of RVI/ signage with peel off film</p>
+                    </div>
+                    
+                    <!-- <div class="xl:col-span-4 col-span-12">
+                        <label class="form-label mb-0">MTC Attachment (PDF)<span class="text-red-500">*</span></label>
+                        <file-pond 
+                        class="filepond basic-filepond" 
+                        [options]="pondDocumentOptions" 
+                        [files]="pondAttachmentFiles"
+                        (onremovefile)="onFileRemove($event, 'pdf')"
+                        (onprocessfile)="onFileProcessed($event, 'pdf')"></file-pond>
+                    </div> -->
+                </div>
+            </div>
+            
+            <div class="box-footer border-t border-block-start-dashed sm:flex justify-end">
+                <app-button [buttonType]="'submit'" [buttonClass]="'ti-btn ti-btn-primary m-0'" [disabled]="api.disabled" [formType]="pageType" [iconClass]="'ri-save-line'"  [loadingIconClass]="'ri-loader-2-fill'"></app-button>
+            </div>
+        </div>            
+    </form>
+</div>

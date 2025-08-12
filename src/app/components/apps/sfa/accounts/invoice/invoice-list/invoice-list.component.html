@@ -1,0 +1,182 @@
+<app-page-header [title]="'Invoice'" [title1]="['Invoice']" [activeitem]="'Invoice List'" *ngIf="pageHeader"></app-page-header>
+
+<div class="box py-3 px-4">
+    
+    <!-- Start::row-1 -->
+    <!-- Date From & Date To Filter -->
+    <div class="px-4 py-2 border-b dark:border-defaultborder/10 bg-light">
+        <div class="flex items-center gap-2">
+            <div class="xl:col-span-6 col-span-12 mb-3">
+                <label class="form-label">Date From<span class="text-red-500">*</span></label>
+                <mat-form-field class="mat-custom-field">
+                    <input matInput [matDatepicker]="picker" placeholder="Start Date" [(ngModel)]="filter.start_date" name="start_date" required #start_date="ngModel">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+            </div>
+            
+            <div class="xl:col-span-6 col-span-12 mb-3">
+                <label class="form-label">Date To<span class="text-red-500">*</span></label>
+                <mat-form-field class="mat-custom-field">
+                    <input matInput [matDatepicker]="picker1" placeholder="End Date" [(ngModel)]="filter.end_date" name="end_date" required #end_date="ngModel">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker1"></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                </mat-form-field>
+            </div>
+            
+            <button  type="button" aria-label="button" class="ti-btn ti-btn-icon ti-btn-primary btn-wave m-0" (click)="getList()">
+                <i class="material-icons">pan_tool_alt</i>
+            </button>
+        </div>
+    </div>
+    <!-- Date From & Date To Filter -->
+    <div class="row">
+        <div class="col-xl-12">
+            <app-page-sub-header [pageTitle]="'Invoice List'" [listLength]="listing.length" 
+            [btnShow]="true" [refreshLabel]="'Refresh'" (onRefresh)="onRefresh()" [class]="'p-0 pt-3'" 
+            [btnShow2]="this.orgData.login_type_id === LOGIN_TYPES.ORGANIZATION_ADMIN" [addBtnLabel]="'Add Invoice'"  (button1)="goToAddPage()"
+            [btnShow3]="true" [importIcon]="'ri-download-cloud-fill'" [importLabel]="'Export Excel'"  (importBtn)="exportWithDateFilter()"
+            [btnShow4]="showChangeStatusBtn" [button4Label]="'Add Warranty'" (button4)="goToWarrantyAddPage()"
+            ></app-page-sub-header>
+            
+            <div class="table-responsive overflow-auto table-bordered-default">
+                <spk-reusable-tables tableClass="ti-custom-table ti-custom-table-head ti-custom-table-hover ti-head-primary whitespace-nowrap" [tableHead]="'border-b'"[showCheckbox]="false" [columns]="getColumns()">
+                    <ng-container *ngIf="!skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker" [(ngModel)]="filter.created_at" name="createdAt" placeholder="Date Created" (ngModelChange)="onDateChange('created_at', $event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker></mat-datepicker>
+                                    </mat-form-field>  
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.created_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.created_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.created_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput  [matDatepicker]="picker2" [(ngModel)]="filter.billing_date" name="dateFrom" placeholder="Invoice No." (ngModelChange)="onDateChange('billing_date', $event)">
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker2></mat-datepicker>
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.invoice_number" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.invoice_number) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.invoice_number=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-search-filters">
+                                    <mat-form-field class="table-input">
+                                        <input matInput type="text" [(ngModel)]="filter.customer_name" placeholder="Search..." (keyup.enter)="getList()">
+                                        @if (filter.customer_name) {
+                                            <button matSuffix mat-icon-button aria-label="Clear" (click)="filter.customer_name=''; getList()">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <!-- <td>&nbsp;</td> -->
+                            <!-- <td>&nbsp;</td> -->
+                        </tr>
+                        <!-- <tr class="product-list border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of listing; let i = index;">
+                            <td class="!text-center">{{(pagination.cur_page - 1) * pagination.limit + i + 1 }}</td>
+                            <td>{{ row.created_at ? (row.created_at | date:'d MMM yyyy, hh:mm a') : '--' }}</td>
+                            <td>{{row.created_name || '--'}}</td>
+                            <td>{{ row.billing_date ? (row.billing_date | date:'d MMM yyyy') : '--' }}</td>
+                            <td class="text-center">
+                                <a class="text-primary font-semibold underline" (click)="goToDetailPage(row._id)">{{row.invoice_number || '--'}}</a>
+                            </td>
+                            <td>{{row.customer_name || '--'}}</td>
+                            <td class="text-center">{{ row.total_product_item || '--' }}</td>
+                            <td class="text-center">{{ row.total_product_qty || '--' }}</td>
+                            <td>
+                                <span class="badge" [ngClass]="{'text-success bg-success/10': row.status === 'Recieved', 'text-warning bg-warning/10': row.status === 'Pending', 'text-danger bg-danger/10': row.status === 'Reject'}">{{row.status || '--'}}</span>
+                            </td>
+                            <td class="!text-center">
+                                <app-icon-button [icon]="'ri-edit-line'" matTooltip="Edit" [buttonClass]="'ti-btn btn-wave  ti-btn-sm ti-btn-soft-success waves-effect waves-light'" (clickEvent)="statusChange(row._id)" *ngIf="row.status === 'Pending' && this.orgData.login_type_id === LOGIN_TYPES.PRIMARY"> </app-icon-button>
+                            </td>
+                        </tr> -->
+                        
+                        <tr class="product-list border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of listing; let i = index;">
+                            <td class="w50 task-checkbox">
+                                <ng-container *ngIf="this.orgData.login_type_id === 5">
+                                    <!-- *ngIf="row.balance_quantity > 0" -->
+                                    <input class="form-check-input" type="checkbox" [(ngModel)]="row.checked" (change)="toggleRowChecked(row)" >
+                                </ng-container>
+                            </td>
+                            <td class="!text-center">{{ i + 1 }}</td>
+                            <td>{{ row.created_at ? (row.created_at | date:'d MMM yyyy, hh:mm a') : '--' }}</td>
+                            <td>{{ row.billing_date ? (row.billing_date | date:'d MMM yyyy') : '--' }}</td>
+                            <td class="text-center">
+                                <a class="text-primary font-semibold underline" (click)="goToDetailPage(row._id)">{{row.invoice_number || '--'}}</a>
+                            </td>
+                            <td>{{row.customer_name || '--'}}</td>
+                            <td>{{row.product_name || '--'}}</td>
+                            <td>{{row.total_quantity || '0'}}</td>
+                            <td [ngClass]="getConsumeBg(row)">{{row.consume_quantity || '0'}}</td>
+                            <td [ngClass]="getBalanceBg(row)">{{row.balance_quantity || '0'}}</td>
+                            <td>{{row.batch_no || '--'}}</td>
+                            <td>{{row.product_grade || '--'}}</td>
+                            <td>{{row.color_code || '--'}}</td>
+                            <td>{{row.length || '--'}}</td>
+                            <td>{{row.width || '--'}}</td>
+                            <!-- <td>
+                                <span class="badge" [ngClass]="{'text-success bg-success/10': row.status === 'Recieved', 'text-warning bg-warning/10': row.status === 'Pending', 'text-danger bg-danger/10': row.status === 'Reject'}">{{row.status || '--'}}</span>
+                            </td> -->
+                            <!-- <td class="!text-center">
+                                <app-icon-button [icon]="'ri-edit-line'" matTooltip="Edit" [buttonClass]="'ti-btn btn-wave  ti-btn-sm ti-btn-soft-success waves-effect waves-light'" (clickEvent)="statusChange(row._id)" *ngIf="row.status === 'Pending' && this.orgData.login_type_id === LOGIN_TYPES.PRIMARY"> </app-icon-button>
+                            </td> -->
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                    <ng-container *ngIf="skLoading">
+                        <tr class="border-b !border-defaultborder dark:!border-defaultborder/10" *ngFor="let row of [].constructor(8)">
+                            <td *ngFor="let row of [].constructor(15)">
+                                <app-skeleton [class]="'h20 bg-skeleton'"></app-skeleton>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <!-- //--skeleton--// -->
+                </spk-reusable-tables>
+                <ng-container *ngIf="!listing.length && !skLoading">
+                    <app-data-not-found></app-data-not-found>
+                </ng-container>
+            </div>
+            
+            <app-pagination-footer [currentPage]="pagination.cur_page" [totalPage]="pagination.total_pages" [pageLimit]="pagination.limit" [listLength]="listing.length" [preBtn]="!pagination.prev" [nextBtn]="!pagination.next" (preButtonClick)="changeToPagination('Previous')" (nextButtonClick)="changeToPagination('Next')" (pageChange)="changeToPage($event)"></app-pagination-footer>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->
