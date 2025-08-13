@@ -222,19 +222,25 @@ jobs:
         
       - name: 📦 Install dependencies
         run: |
-          # Remove lockfile to ensure consistent versions with Angular 19
-          rm -f package-lock.json
-          rm -rf package-lock.json node_modules
+          # Force ng-apexcharts to Angular 19 compatible version
+          sed -i 's/"ng-apexcharts":.*/"ng-apexcharts": "1.16.0",/' package.json
 
+          # Remove lockfiles and node_modules to avoid cached wrong versions
+          rm -rf node_modules package-lock.json
 
           # Remove macOS-only Rollup dependency
           jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
           if [ -f package-lock.json ]; then
             sed -i '/"@rollup\/rollup-darwin-arm64"/,+5d' package-lock.json
           fi
+    
+          # Install with legacy peer deps to skip strict version resolution
           npm install --legacy-peer-deps
+
+          # Install other required packages
           npm install sortablejs flatpickr apexcharts filepond overlayscrollbars --save
           npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
+
  
 
       - name: 🛠️ Build Angular app
