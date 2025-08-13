@@ -224,6 +224,8 @@ jobs:
         run: |
           # Remove lockfile to ensure consistent versions with Angular 19
           rm -f package-lock.json
+          rm -rf package-lock.json node_modules
+
 
           # Remove macOS-only Rollup dependency
           jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
