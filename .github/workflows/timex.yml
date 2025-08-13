@@ -212,6 +212,7 @@ jobs:
             cp -r preview/browser/. /var/www/html/frontend/$CLIENT_NAME/
             echo "🚀 Development deployment complete."
 
+        
   prod-deploy-job:
     needs: conditional-job
     if: ${{ github.event.inputs.action_type == 'production' }}
@@ -222,10 +223,10 @@ jobs:
         
       - name: 📦 Install dependencies
         run: |
-          echo "🔧 Enforcing Angular 19 + ng-apexcharts 1.16.0 compatibility..."
+          echo "🔧 Enforcing Angular 19 + ng-apexcharts 1.15.0 compatibility..."
 
-          # Ensure ng-apexcharts is pinned to 1.16.0
-          sed -i 's/"ng-apexcharts":.*/"ng-apexcharts": "1.16.0",/' package.json
+          # Ensure ng-apexcharts is pinned to 1.15.0
+          sed -i 's/"ng-apexcharts":.*/"ng-apexcharts": "1.15.0",/' package.json
 
           # Force Angular packages to stay on 19.x
           npm pkg set dependencies.@angular/common=19.2.14
@@ -248,10 +249,7 @@ jobs:
           # Install additional required deps
           npm install sortablejs flatpickr apexcharts filepond overlayscrollbars --save
           npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
-
-
- 
-
+          
       - name: 🛠️ Build Angular app
         run: npm run build -- --output-path=prod-build
 
