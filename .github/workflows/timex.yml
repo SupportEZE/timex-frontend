@@ -222,24 +222,33 @@ jobs:
         
       - name: 📦 Install dependencies
         run: |
-          # Force ng-apexcharts to Angular 19 compatible version
+          echo "🔧 Enforcing Angular 19 + ng-apexcharts 1.16.0 compatibility..."
+
+          # Ensure ng-apexcharts is pinned to 1.16.0
           sed -i 's/"ng-apexcharts":.*/"ng-apexcharts": "1.16.0",/' package.json
 
-          # Remove lockfiles and node_modules to avoid cached wrong versions
+          # Force Angular packages to stay on 19.x
+          npm pkg set dependencies.@angular/common=19.2.14
+          npm pkg set dependencies.@angular/core=19.2.14
+          npm pkg set dependencies.@angular/forms=19.2.14
+          npm pkg set dependencies.@angular/platform-browser=19.2.14
+
+          # Remove old modules + lockfile
           rm -rf node_modules package-lock.json
 
-          # Remove macOS-only Rollup dependency
+          # Remove macOS-only Rollup dependency (if exists)
           jq 'del(.dependencies["@rollup/rollup-darwin-arm64"])' package.json > temp.json && mv temp.json package.json
           if [ -f package-lock.json ]; then
             sed -i '/"@rollup\/rollup-darwin-arm64"/,+5d' package-lock.json
           fi
-    
-          # Install with legacy peer deps to skip strict version resolution
+
+          # Install deps with legacy peer deps mode
           npm install --legacy-peer-deps
 
-          # Install other required packages
+          # Install additional required deps
           npm install sortablejs flatpickr apexcharts filepond overlayscrollbars --save
           npm install @types/sortablejs @types/flatpickr @types/luxon --save-dev || true
+
 
  
 
